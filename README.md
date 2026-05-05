@@ -2,7 +2,7 @@
 
 <img src="img/logo_sin_fondo.png" alt="PVM — Python Version Manager" width="320" />
 
-**Python Version Manager**
+**Super PyMan - Python Version Manager**
 
 [![Version](https://img.shields.io/badge/version-1.0.0-7B2FBE?style=flat-square)](https://github.com/dh4r10/py-man/releases)
 [![Windows](https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/dh4r10/py-man/releases/latest)
