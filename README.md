@@ -26,6 +26,12 @@ _Binario único. Sin dependencias. Sin permisos de administrador._
 npm install -g super-py-man
 ```
 
+Luego añade esto a tu `$PROFILE` de PowerShell:
+
+```powershell
+pvm env | Out-String | Invoke-Expression
+```
+
 ### Vía instalador
 
 Descarga el instalador de la [última release](https://github.com/dh4r10/py-man/releases/latest):
