@@ -80,4 +80,7 @@ pub enum Commands {
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<String>,
     },
+
+    /// Desinstala PVM del sistema (elimina ~/.pvm/, PATH y perfil de PowerShell)
+    UninstallSelf,
 }

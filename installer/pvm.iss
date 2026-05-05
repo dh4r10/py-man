@@ -247,11 +247,27 @@ begin
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  PvmHome: string;
+  Answer: Integer;
 begin
   if CurUninstallStep = usPostUninstall then
   begin
     RemoveFromPath();
     RemoveFromPowerShellProfile();
+
+    PvmHome := ExpandConstant('{%USERPROFILE}') + '\.pvm';
+
+    if DirExists(PvmHome) then
+    begin
+      Answer := MsgBox(
+        '¿Deseas eliminar también las versiones de Python instaladas?' + #13#10 + #13#10 + PvmHome + #13#10 + #13#10 + 'Esta carpeta contiene todas las versiones descargadas por PVM.',
+        mbConfirmation,
+        MB_YESNO
+      );
+      if Answer = IDYES then
+        DelTree(PvmHome, True, True, True);
+    end;
   end;
 end;
 

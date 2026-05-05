@@ -4,5 +4,6 @@ pub mod install;
 pub mod list;
 pub mod list_remote;
 pub mod uninstall;
+pub mod uninstall_self;
 pub mod use_ver;
 pub mod venv;

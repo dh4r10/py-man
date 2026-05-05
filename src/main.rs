@@ -74,6 +74,10 @@ async fn main() {
         Commands::Venv { dir, args } => {
             commands::venv::run(&dir, &args, version_override.as_deref())
         }
+
+        Commands::UninstallSelf => {
+            commands::uninstall_self::run()
+        }
     };
 
     if let Err(e) = result {
