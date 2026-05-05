@@ -35,7 +35,6 @@ SetupIconFile=
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
-WizardResizable=yes
 
 ; Información de la licencia / bienvenida
 ; LicenseFile=..\LICENSE
@@ -47,8 +46,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "addprofile"; \
   Description: "Añadir pvm al perfil de PowerShell ({code:GetProfilePath})"; \
-  GroupDescription: "Integración con PowerShell:"; \
-  Flags: checked
+  GroupDescription: "Integración con PowerShell:"
 
 [Files]
 Source: "..\target\release\pvm.exe"; \
@@ -82,9 +80,7 @@ end;
 
 function GetProfilePath(Param: string): string;
 var
-  PS: string;
   Res: Integer;
-  Output: AnsiString;
 begin
   // Pregunta a PowerShell cuál es la ruta del perfil
   if Exec(
@@ -104,6 +100,7 @@ function GetPowerShellProfile(): string;
 var
   TempFile: string;
   Lines: TArrayOfString;
+  ResultCode: Integer;
 begin
   Result := '';
   TempFile := ExpandConstant('{tmp}\pvm_profile.txt');
@@ -114,7 +111,7 @@ begin
     '',
     SW_HIDE,
     ewWaitUntilTerminated,
-    0
+    ResultCode
   ) then
   begin
     if LoadStringsFromFile(TempFile, Lines) and (GetArrayLength(Lines) > 0) then
@@ -242,7 +239,7 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssDone then
   begin
-    if IsTaskSelected('addprofile') then
+    if WizardIsTaskSelected('addprofile') then
       AddToPowerShellProfile();
   end;
 end;

@@ -2,6 +2,14 @@ use anyhow::Result;
 use std::path::PathBuf;
 use crate::dirs;
 
+/// Reenvía `python` / `python3` al ejecutable correcto según la plataforma.
+pub fn forward_python() -> i32 {
+    #[cfg(windows)]
+    return forward("python.exe");
+    #[cfg(not(windows))]
+    return forward("python3");
+}
+
 /// Invocado como `python.exe` / `pythonw.exe`: reenvía al Python real de la versión activa.
 pub fn forward(exe_name: &str) -> i32 {
     let python = match resolve(exe_name) {

@@ -84,12 +84,17 @@ fn refresh_bin() -> Result<()> {
 
     std::fs::create_dir_all(&bin)?;
 
-    // Copiar pvm.exe con los nombres de shim. El binario detecta su propio nombre
+    // Copiar pvm con los nombres de shim. El binario detecta su propio nombre
     // en tiempo de ejecución y actúa como shim en lugar de como CLI pvm.
     let pvm_exe = std::env::current_exe()
         .context("No se pudo determinar la ruta del ejecutable pvm")?;
 
-    for name in &["python.exe", "pythonw.exe", "pip.exe", "pip3.exe"] {
+    #[cfg(windows)]
+    let shim_names: &[&str] = &["python.exe", "pythonw.exe", "pip.exe", "pip3.exe"];
+    #[cfg(not(windows))]
+    let shim_names: &[&str] = &["python", "python3", "pip", "pip3"];
+
+    for name in shim_names {
         let dst = bin.join(name);
         let _ = std::fs::remove_file(&dst);
         std::fs::copy(&pvm_exe, &dst)
