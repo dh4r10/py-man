@@ -31,7 +31,9 @@ ChangesEnvironment=yes
 ; Salida
 OutputDir=..\dist
 OutputBaseFilename=pvm-setup-{#AppVersion}
-SetupIconFile=
+SetupIconFile=..\img\logo_sin_fondo.ico
+WizardImageFile=..\img\logo_sin_fondo.png
+WizardSmallImageFile=..\img\logo_sin_fondo.png
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
