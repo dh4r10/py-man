@@ -9,14 +9,6 @@
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-CE422B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![License MIT](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
 
-<table align="center" border="0"><tr><td align="center" valign="middle" width="480">
-
-```bash
-npm install -g super-py-man
-```
-
-</td></tr></table>
-
 _Gestiona múltiples versiones de Python desde la terminal._  
 _Binario único. Sin dependencias. Sin permisos de administrador._
 
@@ -32,12 +24,6 @@ _Binario único. Sin dependencias. Sin permisos de administrador._
 
 ```bash
 npm install -g super-py-man
-```
-
-Luego añade esto a tu `$PROFILE` de PowerShell:
-
-```powershell
-pvm env | Out-String | Invoke-Expression
 ```
 
 ### Vía instalador
