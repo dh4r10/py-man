@@ -48,6 +48,11 @@ add_to_profile() {
     changed=1
   fi
 
+  if ! grep -qF 'function pvm' "$profile" && ! grep -qF 'pvm()' "$profile"; then
+    printf '%s\n' 'pvm() { command pvm "$@"; local s=$?; [ "$1" = "use" ] || [ "$1" = "default" ] && hash -r 2>/dev/null; return $s; }' >> "$profile"
+    changed=1
+  fi
+
   if [ "$changed" -eq 1 ]; then
     echo "Configurado en $profile"
   fi

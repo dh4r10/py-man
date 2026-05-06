@@ -19,10 +19,10 @@ _Binario único. Sin dependencias. Sin permisos de administrador._
 
 ---
 
-## Instalación
+## [+] Instalación
 
 
-### [+] Windows — Vía npm
+### Windows — Vía npm
 
 ```bash
 npm install -g super-py-man
@@ -39,7 +39,7 @@ pvm env | Out-String | Invoke-Expression
 Descarga el instalador de la [última release](https://github.com/dh4r10/py-man/releases/latest):
 
 ```
-pvm-setup-X.X.X.exe
+pvm-windows-x86_64-X.X.X.exe
 ```
 
 Ejecuta el instalador y sigue el wizard. Al finalizar:
@@ -49,28 +49,19 @@ Ejecuta el instalador y sigue el wizard. Al finalizar:
 - El perfil de PowerShell se configura opcionalmente
 
 > No requiere permisos de administrador.
+> Por ahora es necesaria la desactivación del antivirus.
 
 ---
 
-### [+] Linux
+### Linux
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dh4r10/py-man/master/install.sh | bash
 ```
 
-El script detecta tu arquitectura (x86\_64 o aarch64), descarga el binario correcto y configura tu shell automáticamente. Reinicia la terminal o ejecuta:
+El script detecta tu arquitectura (`x86_64` o `aarch64`), descarga el binario correcto y configura tu shell automáticamente (`.bashrc`, `.zshrc` y fish). Abre una terminal nueva y ya puedes usar `pvm`.
 
-```bash
-export PATH="$HOME/.local/bin:$PATH" && eval "$(pvm env)"
-```
-
-Para configurarlo de forma permanente, añade esto a tu `~/.bashrc` o `~/.zshrc`:
-
-```bash
-eval "$(pvm env)"
-```
-
-## Inicio rápido
+## [+] Inicio rápido
 
 **Windows**
 
@@ -90,26 +81,26 @@ python -V
 
 ```bash
 # Instalar una versión de Python
-pvm install 3.12.13
+pvm install 3.13.13
 
 # Activarla
-pvm use 3.12.13
+pvm use 3.13.13
 
 # Verificar
-python3 --version
-# Python 3.12.13
+python --version
+# Python 3.13.13
 ```
 
 ---
 
-## Comandos
+## [+] Comandos
 
 | Comando                         | Descripción                                          |
 | ------------------------------- | ---------------------------------------------------- |
 | `pvm install <version>`         | Descarga e instala una versión de Python             |
 | `pvm use <version>`             | Cambia la versión activa                             |
 | `pvm list`                      | Lista las versiones instaladas (`*` marca la activa) |
-| `pvm list-remote`               | Lista versiones disponibles en python.org            |
+| `pvm list-remote`               | Lista versiones instalables (python-build-standalone en Linux, python.org en Windows) |
 | `pvm list-remote --filter 3.12` | Filtra por prefijo de versión                        |
 | `pvm uninstall <version>`       | Elimina una versión instalada                        |
 | `pvm default <version>`         | Establece la versión global por defecto              |
@@ -119,7 +110,7 @@ python3 --version
 
 ---
 
-## Entornos virtuales
+## [+] Entornos virtuales
 
 PVM ancla cada venv a la ruta real de la versión, no al alias activo. Esto significa que si después haces `pvm use 3.14.0`, los venvs anteriores siguen apuntando a su versión original.
 
@@ -145,7 +136,7 @@ python --version
 
 ---
 
-## Shells soportados
+## [+] Shells soportados
 
 `pvm env` detecta el shell automáticamente. También puedes especificarlo:
 
@@ -159,7 +150,7 @@ pvm env --shell cmd          # @SET "PATH=...;%PATH%"
 
 ---
 
-## Cómo funciona
+## [+] Cómo funciona
 
 `~/.pvm/bin/` contiene copias del propio binario `pvm` con nombres de shim (`python`, `pip`, etc.). Cuando el sistema operativo ejecuta `python`, encuentra el shim, que resuelve la versión activa y lanza el Python real con `sys.executable` apuntando al directorio exacto de la versión.
 
@@ -196,7 +187,7 @@ pvm env --shell cmd          # @SET "PATH=...;%PATH%"
 
 ---
 
-## Compilar desde código fuente
+## [+] Compilar desde código fuente
 
 Requiere [Rust](https://rustup.rs/) 1.70+.
 
@@ -227,6 +218,6 @@ cargo build --release
 
 ---
 
-## Inspiración
+## [+] Inspiración
 
 Inspirado en [fnm](https://github.com/Schniz/fnm) (Fast Node Manager) — misma filosofía aplicada al ecosistema Python.

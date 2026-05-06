@@ -25,6 +25,69 @@ pub fn installer_url(version: &str) -> String {
     format!("{}{}/", NUGET_BASE, version)
 }
 
+/// Devuelve las versiones de Python disponibles en python-build-standalone para Linux.
+#[cfg(not(windows))]
+pub async fn fetch_standalone_versions() -> Result<Vec<Version>> {
+    let arch = match std::env::consts::ARCH {
+        "x86_64"  => "x86_64",
+        "aarch64" => "aarch64",
+        other     => anyhow::bail!("Arquitectura no soportada: {}", other),
+    };
+
+    let suffix = format!("{}-unknown-linux-gnu-install_only.tar.gz", arch);
+
+    let client = reqwest::Client::builder()
+        .user_agent("pvm/1.0")
+        .build()?;
+
+    let mut versions = std::collections::HashSet::new();
+
+    for page in 1..=3u32 {
+        let api_url = format!(
+            "https://api.github.com/repos/astral-sh/python-build-standalone/releases?per_page=5&page={}",
+            page
+        );
+
+        let response = client
+            .get(&api_url)
+            .header("Accept", "application/vnd.github+json")
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            break;
+        }
+
+        let releases: Vec<serde_json::Value> = response.json().await?;
+
+        if releases.is_empty() {
+            break;
+        }
+
+        for release in &releases {
+            if let Some(assets) = release["assets"].as_array() {
+                for asset in assets {
+                    let name = asset["name"].as_str().unwrap_or("");
+                    if name.starts_with("cpython-") && name.ends_with(&suffix) {
+                        // cpython-3.12.13+20260504-x86_64-unknown-linux-gnu-install_only.tar.gz
+                        if let Some(ver_str) = name.strip_prefix("cpython-") {
+                            if let Some(plus_pos) = ver_str.find('+') {
+                                if let Ok(v) = Version::parse(&ver_str[..plus_pos]) {
+                                    versions.insert(v);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let mut result: Vec<Version> = versions.into_iter().collect();
+    result.sort_by(|a, b| b.cmp(a));
+    Ok(result)
+}
+
 /// Busca en las releases de python-build-standalone (astral-sh) la URL de descarga
 /// del tarball `install_only` para la versión y arquitectura actuales (Linux).
 #[cfg(not(windows))]
