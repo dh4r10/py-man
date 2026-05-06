@@ -45,6 +45,7 @@ add_to_profile() {
 
   if ! grep -qF 'pvm env' "$profile"; then
     printf '%s\n' "$pvm_line" >> "$profile"
+    printf '%s\n' 'rehash' >> "$profile"
     changed=1
   fi
 
