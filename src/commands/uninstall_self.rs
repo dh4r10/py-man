@@ -167,7 +167,9 @@ fn clean_shell_profile(path: &std::path::Path) -> Result<()> {
         let is_pvm_line = line.contains("pvm env")
             || line.contains("pvm env --shell fish")
             || (line.contains("fish_add_path") && line.contains(".local/bin"))
-            || (line.contains("export PATH") && line.contains(".local/bin") && line.contains("pvm"));
+            || (line.contains("export PATH") && line.contains(".local/bin") && line.contains("pvm"))
+            || line.contains("function pvm")
+            || line.contains("pvm()") && line.contains("command pvm");
 
         if is_pvm_line {
             skip_next_rehash = true;
