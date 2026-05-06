@@ -21,25 +21,8 @@ _Binario único. Sin dependencias. Sin permisos de administrador._
 
 ## Instalación
 
-### Linux
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/dh4r10/py-man/master/install.sh | bash
-```
-
-El script detecta tu arquitectura (x86\_64 o aarch64), descarga el binario correcto y configura tu shell automáticamente. Reinicia la terminal o ejecuta:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH" && eval "$(pvm env)"
-```
-
-Para configurarlo de forma permanente, añade esto a tu `~/.bashrc` o `~/.zshrc`:
-
-```bash
-eval "$(pvm env)"
-```
-
-### Windows — Vía npm
+### [+] Windows — Vía npm
 
 ```bash
 npm install -g super-py-man
@@ -69,21 +52,25 @@ Ejecuta el instalador y sigue el wizard. Al finalizar:
 
 ---
 
-## Inicio rápido
-
-**Linux / macOS**
+### [+] Linux
 
 ```bash
-# Instalar una versión de Python
-pvm install 3.12.13
-
-# Activarla
-pvm use 3.12.13
-
-# Verificar
-python3 --version
-# Python 3.12.13
+curl -fsSL https://raw.githubusercontent.com/dh4r10/py-man/master/install.sh | bash
 ```
+
+El script detecta tu arquitectura (x86\_64 o aarch64), descarga el binario correcto y configura tu shell automáticamente. Reinicia la terminal o ejecuta:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH" && eval "$(pvm env)"
+```
+
+Para configurarlo de forma permanente, añade esto a tu `~/.bashrc` o `~/.zshrc`:
+
+```bash
+eval "$(pvm env)"
+```
+
+## Inicio rápido
 
 **Windows**
 
@@ -96,6 +83,20 @@ pvm use 3.12.13
 
 # Verificar
 python -V
+# Python 3.12.13
+```
+
+**Linux**
+
+```bash
+# Instalar una versión de Python
+pvm install 3.12.13
+
+# Activarla
+pvm use 3.12.13
+
+# Verificar
+python3 --version
 # Python 3.12.13
 ```
 
@@ -130,16 +131,16 @@ pvm venv .venv
 pvm -3.12.13 venv .venv
 ```
 
-**Linux**
-```bash
-source .venv/bin/activate
-python --version
-```
-
 **Windows**
 ```powershell
 .venv\Scripts\activate
 python -V
+```
+
+**Linux**
+```bash
+source .venv/bin/activate
+python --version
 ```
 
 ---
@@ -162,6 +163,21 @@ pvm env --shell cmd          # @SET "PATH=...;%PATH%"
 
 `~/.pvm/bin/` contiene copias del propio binario `pvm` con nombres de shim (`python`, `pip`, etc.). Cuando el sistema operativo ejecuta `python`, encuentra el shim, que resuelve la versión activa y lanza el Python real con `sys.executable` apuntando al directorio exacto de la versión.
 
+**Windows**
+```
+~/.pvm/
+├── versions/
+│   └── 3.12.13/
+│       └── tools/
+│           ├── python.exe
+│           └── Scripts/pip.exe
+├── aliases/
+│   └── current/  ← junction NTFS → versions/3.12.13
+└── bin/
+    ├── python.exe  ← shim (copia de pvm.exe)
+    └── pip.exe     ← shim (copia de pvm.exe)
+```
+
 **Linux**
 ```
 ~/.pvm/
@@ -178,34 +194,11 @@ pvm env --shell cmd          # @SET "PATH=...;%PATH%"
     └── pip      ← shim (copia de pvm)
 ```
 
-**Windows**
-```
-~/.pvm/
-├── versions/
-│   └── 3.12.13/
-│       └── tools/
-│           ├── python.exe
-│           └── Scripts/pip.exe
-├── aliases/
-│   └── current/  ← junction NTFS → versions/3.12.13
-└── bin/
-    ├── python.exe  ← shim (copia de pvm.exe)
-    └── pip.exe     ← shim (copia de pvm.exe)
-```
-
 ---
 
 ## Compilar desde código fuente
 
 Requiere [Rust](https://rustup.rs/) 1.70+.
-
-**Linux**
-```bash
-git clone https://github.com/dh4r10/py-man
-cd py-man
-cargo build --release
-# Binario en: target/release/pvm
-```
 
 **Windows**
 ```powershell
@@ -222,6 +215,15 @@ cargo build --release --bin pvm
 iscc installer\pvm.iss
 # Instalador en: dist\pvm-setup-X.X.X.exe
 ```
+
+**Linux**
+```bash
+git clone https://github.com/dh4r10/py-man
+cd py-man
+cargo build --release
+# Binario en: target/release/pvm
+```
+
 
 ---
 
