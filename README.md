@@ -49,6 +49,7 @@ Ejecuta el instalador y sigue el wizard. Al finalizar:
 - El perfil de PowerShell se configura opcionalmente
 
 > No requiere permisos de administrador.
+> Por ahora es necesaria la desactivación del antivirus.
 
 ---
 
