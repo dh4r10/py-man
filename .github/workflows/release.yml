@@ -42,15 +42,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release
-      - run: |
-          cp target/release/pvm.exe pvm-windows-x86_64.exe
-          cp target/release/pvm.exe pvm.exe
+      - name: Build installer with Inno Setup
+        run: iscc installer\pvm.iss
+      - run: cp target/release/pvm.exe pvm.exe
         shell: bash
       - uses: actions/upload-artifact@v4
         with:
           name: pvm-windows-x86_64
           path: |
-            pvm-windows-x86_64.exe
+            dist\pvm-windows-x86_64-v1.1.0.exe
             pvm.exe
 
   release:
@@ -66,5 +66,5 @@ jobs:
           files: |
             pvm-linux-x86_64
             pvm-linux-aarch64
-            pvm-windows-x86_64.exe
+            pvm-windows-x86_64-v1.1.0.exe
             pvm.exe

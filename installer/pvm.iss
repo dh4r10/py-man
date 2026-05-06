@@ -4,7 +4,7 @@
 
 #define AppName    "PVM"
 #define AppFullName "PVM - Python Version Manager"
-#define AppVersion  "1.0.0"
+#define AppVersion  "1.1.0"
 #define AppExe      "pvm.exe"
 #define AppURL      "https://github.com/Schniz/fnm"
 
@@ -30,7 +30,7 @@ ChangesEnvironment=yes
 
 ; Salida
 OutputDir=..\dist
-OutputBaseFilename=pvm-setup-{#AppVersion}
+OutputBaseFilename=pvm-windows-x86_64-v{#AppVersion}
 SetupIconFile=..\img\logo_sin_fondo.ico
 WizardImageFile=..\img\logo_sin_fondo.png
 WizardSmallImageFile=..\img\logo_sin_fondo.png
