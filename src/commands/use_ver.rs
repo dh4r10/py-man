@@ -78,7 +78,8 @@ fn refresh_bin() -> Result<()> {
         Ok(()) => {}
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {}
         Err(ref e) if e.raw_os_error() == Some(145) => {} // Windows: ERROR_DIR_NOT_EMPTY
-        Err(ref e) if e.raw_os_error() == Some(66) => {}  // Unix: ENOTEMPTY
+        Err(ref e) if e.raw_os_error() == Some(39) => {}  // Linux: ENOTEMPTY
+        Err(ref e) if e.raw_os_error() == Some(66) => {}  // macOS: ENOTEMPTY
         Err(e) => bail!("No se pudo limpiar bin/: {}", e),
     }
 

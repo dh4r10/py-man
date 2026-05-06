@@ -25,7 +25,11 @@ pub fn forward(exe_name: &str) -> i32 {
 
 /// Invocado como `pip.exe` / `pip3.exe`: ejecuta `python -m pip <args>`.
 pub fn forward_pip() -> i32 {
-    let python = match resolve("python.exe") {
+    #[cfg(windows)]
+    let exe = "python.exe";
+    #[cfg(not(windows))]
+    let exe = "python3";
+    let python = match resolve(exe) {
         Ok(p) => p,
         Err(e) => {
             eprintln!("[pvm] {}", e);
@@ -76,9 +80,9 @@ fn resolve(exe_name: &str) -> Result<PathBuf> {
 
     #[cfg(not(windows))]
     {
-        let python = resolved.join("bin").join("python3");
+        let python = resolved.join("bin").join(exe_name);
         if !python.exists() {
-            anyhow::bail!("No se encontró python3 en la versión activa.");
+            anyhow::bail!("No se encontró {} en la versión activa.", exe_name);
         }
         return Ok(python);
     }
