@@ -44,16 +44,24 @@ pub async fn standalone_url(version: &str) -> Result<String> {
 
     for page in 1..=10u32 {
         let api_url = format!(
-            "https://api.github.com/repos/astral-sh/python-build-standalone/releases?per_page=50&page={}",
+            "https://api.github.com/repos/astral-sh/python-build-standalone/releases?per_page=5&page={}",
             page
         );
 
-        let releases: Vec<serde_json::Value> = client
+        let response = client
             .get(&api_url)
+            .header("Accept", "application/vnd.github+json")
             .send()
-            .await?
-            .json()
             .await?;
+
+        if !response.status().is_success() {
+            anyhow::bail!(
+                "GitHub API devolvió HTTP {} al buscar releases.",
+                response.status()
+            );
+        }
+
+        let releases: Vec<serde_json::Value> = response.json().await?;
 
         if releases.is_empty() {
             break;
