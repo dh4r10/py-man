@@ -4,8 +4,9 @@
 
 **Super PyMan - Python Version Manager**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-7B2FBE?style=flat-square)](https://github.com/dh4r10/py-man/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-7B2FBE?style=flat-square)](https://github.com/dh4r10/py-man/releases)
 [![Windows](https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/dh4r10/py-man/releases/latest)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)](https://github.com/dh4r10/py-man/releases/latest)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-CE422B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![License MIT](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
 
@@ -20,7 +21,25 @@ _Binario único. Sin dependencias. Sin permisos de administrador._
 
 ## Instalación
 
-### Vía npm
+### Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dh4r10/py-man/master/install.sh | bash
+```
+
+El script detecta tu arquitectura (x86\_64 o aarch64), descarga el binario correcto y configura tu shell automáticamente. Reinicia la terminal o ejecuta:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH" && eval "$(pvm env)"
+```
+
+Para configurarlo de forma permanente, añade esto a tu `~/.bashrc` o `~/.zshrc`:
+
+```bash
+eval "$(pvm env)"
+```
+
+### Windows — Vía npm
 
 ```bash
 npm install -g super-py-man
@@ -32,7 +51,7 @@ Luego añade esto a tu `$PROFILE` de PowerShell:
 pvm env | Out-String | Invoke-Expression
 ```
 
-### Vía instalador
+### Windows — Vía instalador
 
 Descarga el instalador de la [última release](https://github.com/dh4r10/py-man/releases/latest):
 
@@ -48,28 +67,36 @@ Ejecuta el instalador y sigue el wizard. Al finalizar:
 
 > No requiere permisos de administrador.
 
-### Activar en PowerShell
-
-Si no configuraste el perfil durante la instalación, añade esto a tu `$PROFILE`:
-
-```powershell
-pvm env | Out-String | Invoke-Expression
-```
-
 ---
 
 ## Inicio rápido
 
-```powershell
+**Linux / macOS**
+
+```bash
 # Instalar una versión de Python
-pvm install 3.12.4
+pvm install 3.12.13
 
 # Activarla
-pvm use 3.12.4
+pvm use 3.12.13
+
+# Verificar
+python3 --version
+# Python 3.12.13
+```
+
+**Windows**
+
+```powershell
+# Instalar una versión de Python
+pvm install 3.12.13
+
+# Activarla
+pvm use 3.12.13
 
 # Verificar
 python -V
-# Python 3.12.4
+# Python 3.12.13
 ```
 
 ---
@@ -87,6 +114,7 @@ python -V
 | `pvm default <version>`         | Establece la versión global por defecto              |
 | `pvm env`                       | Imprime el comando para configurar el PATH del shell |
 | `pvm venv <dir>`                | Crea un entorno virtual con la versión activa        |
+| `pvm uninstall-self`            | Desinstala PVM del sistema                           |
 
 ---
 
@@ -94,19 +122,23 @@ python -V
 
 PVM ancla cada venv a la ruta real de la versión, no al alias activo. Esto significa que si después haces `pvm use 3.14.0`, los venvs anteriores siguen apuntando a su versión original.
 
-```powershell
+```bash
 # Crea el venv con la versión activa
 pvm venv .venv
 
 # Crea el venv con una versión específica sin cambiar el use activo
-pvm -3.12.4 venv .venv
+pvm -3.12.13 venv .venv
 ```
 
-```powershell
-# Activar el venv
-.venv\Scripts\activate
+**Linux**
+```bash
+source .venv/bin/activate
+python --version
+```
 
-# Verificar que está anclado a la versión correcta
+**Windows**
+```powershell
+.venv\Scripts\activate
 python -V
 ```
 
@@ -116,10 +148,11 @@ python -V
 
 `pvm env` detecta el shell automáticamente. También puedes especificarlo:
 
-```powershell
-pvm env --shell powershell   # $env:PATH = "...;$env:PATH"
+```bash
 pvm env --shell bash         # export PATH="...:$PATH"
+pvm env --shell zsh          # export PATH="...:$PATH"
 pvm env --shell fish         # set -gx PATH "..." $PATH
+pvm env --shell powershell   # $env:PATH = "...;$env:PATH"
 pvm env --shell cmd          # @SET "PATH=...;%PATH%"
 ```
 
@@ -127,17 +160,34 @@ pvm env --shell cmd          # @SET "PATH=...;%PATH%"
 
 ## Cómo funciona
 
-`~/.pvm/bin/` contiene copias del propio binario `pvm.exe` con nombres de shim (`python.exe`, `pip.exe`, etc.). Cuando el sistema operativo ejecuta `python`, encuentra el shim, que resuelve la versión activa y lanza el Python real con `sys.executable` apuntando al directorio exacto de la versión.
+`~/.pvm/bin/` contiene copias del propio binario `pvm` con nombres de shim (`python`, `pip`, etc.). Cuando el sistema operativo ejecuta `python`, encuentra el shim, que resuelve la versión activa y lanza el Python real con `sys.executable` apuntando al directorio exacto de la versión.
 
+**Linux**
 ```
 ~/.pvm/
 ├── versions/
-│   ├── 3.12.4/
-│   │   └── tools/python.exe
-│   └── 3.13.1/
-│       └── tools/python.exe
+│   └── 3.12.13/
+│       ├── bin/
+│       │   ├── python3
+│       │   └── pip3
+│       └── lib/
 ├── aliases/
-│   └── current/   ← junction NTFS → versions/X.Y.Z
+│   └── current  ← symlink → versions/3.12.13
+└── bin/
+    ├── python   ← shim (copia de pvm)
+    └── pip      ← shim (copia de pvm)
+```
+
+**Windows**
+```
+~/.pvm/
+├── versions/
+│   └── 3.12.13/
+│       └── tools/
+│           ├── python.exe
+│           └── Scripts/pip.exe
+├── aliases/
+│   └── current/  ← junction NTFS → versions/3.12.13
 └── bin/
     ├── python.exe  ← shim (copia de pvm.exe)
     └── pip.exe     ← shim (copia de pvm.exe)
@@ -149,18 +199,23 @@ pvm env --shell cmd          # @SET "PATH=...;%PATH%"
 
 Requiere [Rust](https://rustup.rs/) 1.70+.
 
+**Linux**
+```bash
+git clone https://github.com/dh4r10/py-man
+cd py-man
+cargo build --release
+# Binario en: target/release/pvm
+```
+
+**Windows**
 ```powershell
 git clone https://github.com/dh4r10/py-man
 cd py-man
-
-# Compilar
 cargo build --release
-
-# El binario queda en:
-# target/release/pvm.exe
+# Binario en: target\release\pvm.exe
 ```
 
-Para generar el instalador, instala [Inno Setup 6](https://jrsoftware.org/isdl.php) y ejecuta:
+Para generar el instalador de Windows, instala [Inno Setup 6](https://jrsoftware.org/isdl.php) y ejecuta:
 
 ```powershell
 cargo build --release --bin pvm
