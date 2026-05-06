@@ -4,7 +4,7 @@
 
 **Super PyMan - Python Version Manager**
 
-[![Version](https://img.shields.io/badge/version-1.1.0-7B2FBE?style=flat-square)](https://github.com/dh4r10/py-man/releases)
+[![Version](https://img.shields.io/github/v/release/dh4r10/py-man?style=flat-square&color=7B2FBE&label=version)](https://github.com/dh4r10/py-man/releases)
 [![Windows](https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/dh4r10/py-man/releases/latest)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)](https://github.com/dh4r10/py-man/releases/latest)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-CE422B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)

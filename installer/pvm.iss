@@ -4,7 +4,9 @@
 
 #define AppName    "PVM"
 #define AppFullName "PVM - Python Version Manager"
-#define AppVersion  "1.1.0"
+#ifndef AppVersion
+  #define AppVersion "1.1.0"
+#endif
 #define AppExe      "pvm.exe"
 #define AppURL      "https://github.com/Schniz/fnm"
 
