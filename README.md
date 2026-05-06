@@ -39,7 +39,7 @@ pvm env | Out-String | Invoke-Expression
 Descarga el instalador de la [última release](https://github.com/dh4r10/py-man/releases/latest):
 
 ```
-pvm-setup-X.X.X.exe
+pvm-windows-x86_64-X.X.X.exe
 ```
 
 Ejecuta el instalador y sigue el wizard. Al finalizar:
