@@ -86,6 +86,55 @@ async fn main() {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn s(v: &[&str]) -> Vec<String> {
+        v.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn extract_no_version_flag() {
+        let input = s(&["pvm", "list"]);
+        let (ver, cleaned) = extract_version_prefix(input.clone());
+        assert_eq!(ver, None);
+        assert_eq!(cleaned, input);
+    }
+
+    #[test]
+    fn extract_version_flag_stripped() {
+        let input = s(&["pvm", "-3.12.4", "venv", ".venv"]);
+        let (ver, cleaned) = extract_version_prefix(input);
+        assert_eq!(ver, Some("3.12.4".to_string()));
+        assert_eq!(cleaned, s(&["pvm", "venv", ".venv"]));
+    }
+
+    #[test]
+    fn extract_only_first_version_flag() {
+        let input = s(&["pvm", "-3.12.4", "-3.11.0", "venv", ".venv"]);
+        let (ver, cleaned) = extract_version_prefix(input);
+        assert_eq!(ver, Some("3.12.4".to_string()));
+        assert_eq!(cleaned, s(&["pvm", "-3.11.0", "venv", ".venv"]));
+    }
+
+    #[test]
+    fn extract_ignores_regular_flags() {
+        let input = s(&["pvm", "--help"]);
+        let (ver, cleaned) = extract_version_prefix(input.clone());
+        assert_eq!(ver, None);
+        assert_eq!(cleaned, input);
+    }
+
+    #[test]
+    fn extract_version_at_end() {
+        let input = s(&["pvm", "venv", ".venv", "-3.12.4"]);
+        let (ver, cleaned) = extract_version_prefix(input);
+        assert_eq!(ver, Some("3.12.4".to_string()));
+        assert_eq!(cleaned, s(&["pvm", "venv", ".venv"]));
+    }
+}
+
 fn exe_stem() -> Option<String> {
     std::env::current_exe()
         .ok()
