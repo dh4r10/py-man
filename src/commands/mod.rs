@@ -1,6 +1,7 @@
 pub mod default;
 pub mod env;
 pub mod install;
+pub mod language;
 pub mod list;
 pub mod list_remote;
 pub mod uninstall;

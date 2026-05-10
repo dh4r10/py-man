@@ -1,35 +1,44 @@
 use anyhow::{bail, Result};
 use colored::Colorize;
 use std::io::{self, Write};
+use crate::t;
 
 pub fn run() -> Result<()> {
-    println!("{}", "Desinstalador de PVM".bold().magenta());
+    println!("{}", t!("PVM Uninstaller", "Desinstalador de PVM").bold().magenta());
     println!();
-    println!("Esto eliminará:");
-    println!("  • ~/.pvm/          (versiones, aliases, shims)");
+    println!("{}", t!("This will remove:", "Esto eliminará:"));
+    println!("  • ~/.pvm/          {}", t!("(versions, aliases, shims)", "(versiones, aliases, shims)"));
 
     #[cfg(windows)]
     {
-        println!("  • PATH del usuario (entrada de PVM)");
-        println!("  • Perfil de PowerShell (línea pvm env)");
-        println!("  • Directorio de instalación de pvm.exe");
+        println!("  • {}", t!("User PATH (PVM entry)", "PATH del usuario (entrada de PVM)"));
+        println!("  • {}", t!("PowerShell profile (pvm env line)", "Perfil de PowerShell (línea pvm env)"));
+        println!("  • {}", t!("pvm.exe installation directory", "Directorio de instalación de pvm.exe"));
     }
 
     #[cfg(not(windows))]
     {
-        println!("  • ~/.local/bin/pvm (binario)");
-        println!("  • Líneas de pvm en .bashrc / .zshrc / config.fish");
+        println!("  • {}", t!("~/.local/bin/pvm (binary)", "~/.local/bin/pvm (binario)"));
+        println!("  • {}", t!(
+            "PVM lines in .bashrc / .zshrc / config.fish",
+            "Líneas de pvm en .bashrc / .zshrc / config.fish"
+        ));
     }
 
     println!();
 
-    print!("¿Confirmar desinstalación? [s/N]: ");
+    // Use language-appropriate confirmation key
+    let prompt = t!("Confirm uninstall? [y/N]: ", "¿Confirmar desinstalación? [s/N]: ");
+    print!("{}", prompt);
     io::stdout().flush()?;
 
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
-    if !matches!(input.trim().to_lowercase().as_str(), "s" | "si" | "sí" | "y" | "yes") {
-        println!("Cancelado.");
+    let trimmed = input.trim().to_lowercase();
+    let confirmed = matches!(trimmed.as_str(), "y" | "yes" | "s" | "si" | "sí");
+
+    if !confirmed {
+        println!("{}", t!("Cancelled.", "Cancelado."));
         return Ok(());
     }
 
@@ -41,8 +50,11 @@ pub fn run() -> Result<()> {
     schedule_binary_removal()?;
 
     println!();
-    println!("{}", "PVM desinstalado correctamente.".bold().green());
-    println!("Abre una nueva terminal para que los cambios surtan efecto.");
+    println!("{}", t!("PVM uninstalled successfully.", "PVM desinstalado correctamente.").bold().green());
+    println!("{}", t!(
+        "Open a new terminal for the changes to take effect.",
+        "Abre una nueva terminal para que los cambios surtan efecto."
+    ));
 
     Ok(())
 }
@@ -53,7 +65,7 @@ fn remove_pvm_data() -> Result<()> {
         std::fs::remove_dir_all(&pvm_home)?;
         println!("{} ~/.pvm/", "✓".green());
     } else {
-        println!("{} ~/.pvm/ (ya no existía)", "·".dimmed());
+        println!("{} ~/.pvm/ {}", "·".dimmed(), t!("(already removed)", "(ya no existía)").dimmed());
     }
     Ok(())
 }
@@ -84,15 +96,15 @@ if ($old) {{
             .status()?;
 
         if status.success() {
-            println!("{} PATH del usuario", "✓".green());
+            println!("{} {}", "✓".green(), t!("User PATH", "PATH del usuario"));
         } else {
-            eprintln!("{} No se pudo limpiar el PATH", "!".yellow());
+            eprintln!("{} {}", "!".yellow(), t!("Could not clean PATH", "No se pudo limpiar el PATH"));
         }
     }
 
     #[cfg(not(windows))]
     {
-        // En Linux el PATH se gestiona desde los profiles — se limpia en remove_from_profile()
+        // On Linux, PATH is managed via shell profiles — cleaned in remove_from_profile()
     }
 
     Ok(())
@@ -119,15 +131,21 @@ if (Test-Path $profile_path) {
             .status()?;
 
         if status.success() {
-            println!("{} Perfil de PowerShell", "✓".green());
+            println!("{} {}", "✓".green(), t!("PowerShell profile", "Perfil de PowerShell"));
         } else {
-            eprintln!("{} No se pudo limpiar el perfil de PowerShell", "!".yellow());
+            eprintln!("{} {}", "!".yellow(), t!(
+                "Could not clean PowerShell profile",
+                "No se pudo limpiar el perfil de PowerShell"
+            ));
         }
     }
 
     #[cfg(not(windows))]
     {
-        let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("No se encontró el directorio home"))?;
+        let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("{}", t!(
+            "Could not find the home directory",
+            "No se encontró el directorio home"
+        )))?;
 
         let profiles = [
             home.join(".bashrc"),
@@ -137,7 +155,11 @@ if (Test-Path $profile_path) {
         for profile in &profiles {
             if profile.exists() {
                 if let Err(e) = clean_shell_profile(profile) {
-                    eprintln!("{} No se pudo limpiar {}: {}", "!".yellow(), profile.display(), e);
+                    eprintln!("{} {}: {}", "!".yellow(), t!(
+                        "Could not clean",
+                        "No se pudo limpiar"
+                    ), profile.display());
+                    eprintln!("  {}", e);
                 }
             }
         }
@@ -145,7 +167,11 @@ if (Test-Path $profile_path) {
         let fish = home.join(".config/fish/config.fish");
         if fish.exists() {
             if let Err(e) = clean_shell_profile(&fish) {
-                eprintln!("{} No se pudo limpiar {}: {}", "!".yellow(), fish.display(), e);
+                eprintln!("{} {}: {}", "!".yellow(), t!(
+                    "Could not clean",
+                    "No se pudo limpiar"
+                ), fish.display());
+                eprintln!("  {}", e);
             }
         }
     }
@@ -153,8 +179,8 @@ if (Test-Path $profile_path) {
     Ok(())
 }
 
-/// Elimina las líneas añadidas por pvm del profile dado.
-/// Elimina: líneas con "pvm", y la línea "rehash" que siga inmediatamente a una de ellas.
+/// Removes PVM-added lines from a shell profile.
+/// Removes lines containing "pvm" and the "rehash" line that immediately follows.
 #[cfg(not(windows))]
 fn clean_shell_profile(path: &std::path::Path) -> Result<()> {
     let content = std::fs::read_to_string(path)?;
@@ -185,7 +211,6 @@ fn clean_shell_profile(path: &std::path::Path) -> Result<()> {
         new_lines.push(line);
     }
 
-    // Eliminar líneas vacías consecutivas al final
     while new_lines.last().map(|l| l.trim().is_empty()).unwrap_or(false) {
         new_lines.pop();
     }
@@ -221,7 +246,10 @@ fn schedule_binary_removal() -> Result<()> {
             .args(["-NonInteractive", "-WindowStyle", "Hidden", "-Command", &script])
             .spawn()?;
 
-        println!("{} Directorio de instalación (se eliminará en segundos)", "✓".green());
+        println!("{} {}", "✓".green(), t!(
+            "Installation directory (will be removed in seconds)",
+            "Directorio de instalación (se eliminará en segundos)"
+        ));
     }
 
     #[cfg(not(windows))]
@@ -240,6 +268,9 @@ fn install_dir() -> Result<std::path::PathBuf> {
     let exe = std::env::current_exe()?;
     match exe.parent() {
         Some(dir) => Ok(dir.to_path_buf()),
-        None => bail!("No se pudo determinar el directorio de instalación"),
+        None => bail!("{}", t!(
+            "Could not determine the installation directory",
+            "No se pudo determinar el directorio de instalación"
+        )),
     }
 }

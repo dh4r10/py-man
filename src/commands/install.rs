@@ -3,7 +3,7 @@ use futures_util::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::path::Path;
 
-use crate::{dirs, releases, validate};
+use crate::{dirs, releases, validate, t};
 
 pub async fn run(version: &str) -> Result<()> {
     let version = resolve_version(version).await?;
@@ -14,7 +14,7 @@ pub async fn run(version: &str) -> Result<()> {
     let dest = dirs::version_dir(version)?;
 
     if dest.exists() {
-        bail!("La versión {} ya está instalada.", version);
+        bail!("{}", t!("Version {} is already installed.", "La versión {} ya está instalada.", version));
     }
 
     #[cfg(windows)]
@@ -35,10 +35,10 @@ async fn download_bytes(url: &str) -> Result<Vec<u8>> {
         .get(url)
         .send()
         .await
-        .context("Error iniciando la descarga")?;
+        .context("Error starting download")?;
 
     if !response.status().is_success() {
-        bail!("HTTP {} al descargar {}", response.status(), url);
+        bail!("HTTP {} downloading {}", response.status(), url);
     }
 
     let total_size = response.content_length();
@@ -56,12 +56,12 @@ async fn download_bytes(url: &str) -> Result<Vec<u8>> {
     let mut stream = response.bytes_stream();
 
     while let Some(chunk) = stream.next().await {
-        let chunk = chunk.context("Error leyendo chunk de descarga")?;
+        let chunk = chunk.context("Error reading download chunk")?;
         bytes.extend_from_slice(&chunk);
         pb.inc(chunk.len() as u64);
     }
 
-    pb.finish_with_message("Descarga completa");
+    pb.finish_with_message(t!("Download complete", "Descarga completa"));
 
     Ok(bytes)
 }
@@ -70,43 +70,43 @@ async fn download_bytes(url: &str) -> Result<Vec<u8>> {
 async fn run_windows(version: &str, dest: &Path) -> Result<()> {
     let url = releases::installer_url(version);
 
-    println!("Descargando Python {} ...", version);
+    println!("{}", t!("Downloading Python {} ...", "Descargando Python {} ...", version));
 
     let bytes = download_bytes(&url).await?;
 
-    println!("Extrayendo Python {} ...", version);
+    println!("{}", t!("Extracting Python {} ...", "Extrayendo Python {} ...", version));
 
     install_nuget_package(&bytes, dest)?;
 
     let python = find_python_exe(dest)
-        .context("No se encontró python.exe en el paquete NuGet")?;
+        .context("python.exe not found in NuGet package")?;
 
-    println!("Configurando pip ...");
+    println!("{}", t!("Setting up pip ...", "Configurando pip ..."));
 
     ensurepip(&python)?;
 
-    println!("Python {} instalado correctamente.", version);
-    println!("Usa `pvm use {}` para activarlo.", version);
+    println!("{}", t!("Python {} installed successfully.", "Python {} instalado correctamente.", version));
+    println!("{}", t!("Use `pvm use {}` to activate it.", "Usa `pvm use {}` para activarlo.", version));
 
     Ok(())
 }
 
 #[cfg(not(windows))]
 async fn run_linux(version: &str, dest: &Path) -> Result<()> {
-    println!("Buscando Python {} para Linux ...", version);
+    println!("{}", t!("Looking up Python {} for Linux ...", "Buscando Python {} para Linux ...", version));
 
     let url = releases::standalone_url(version).await?;
 
-    println!("Descargando Python {} ...", version);
+    println!("{}", t!("Downloading Python {} ...", "Descargando Python {} ...", version));
 
     let bytes = download_bytes(&url).await?;
 
-    println!("Extrayendo Python {} ...", version);
+    println!("{}", t!("Extracting Python {} ...", "Extrayendo Python {} ...", version));
 
     extract_tarball(&bytes, dest)?;
 
-    println!("Python {} instalado correctamente.", version);
-    println!("Usa `pvm use {}` para activarlo.", version);
+    println!("{}", t!("Python {} installed successfully.", "Python {} instalado correctamente.", version));
+    println!("{}", t!("Use `pvm use {}` to activate it.", "Usa `pvm use {}` para activarlo.", version));
 
     Ok(())
 }
@@ -121,7 +121,7 @@ fn install_nuget_package(zip_bytes: &[u8], dest: &Path) -> Result<()> {
 
     let reader = Cursor::new(zip_bytes);
     let mut archive = ZipArchive::new(reader)
-        .context("No se pudo abrir el paquete NuGet")?;
+        .context("Could not open NuGet package")?;
 
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
@@ -141,9 +141,9 @@ fn install_nuget_package(zip_bytes: &[u8], dest: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Extrae el tarball de python-build-standalone eliminando el componente raíz `python/`.
-/// El archivo tiene la estructura `python/bin/python3`, `python/lib/`, etc.
-/// Tras la extracción queda `dest/bin/python3`, `dest/lib/`, etc.
+/// Extracts the python-build-standalone tarball stripping the root `python/` component.
+/// The archive has the structure `python/bin/python3`, `python/lib/`, etc.
+/// After extraction: `dest/bin/python3`, `dest/lib/`, etc.
 #[cfg(not(windows))]
 fn extract_tarball(bytes: &[u8], dest: &Path) -> Result<()> {
     use flate2::read::GzDecoder;
@@ -158,7 +158,6 @@ fn extract_tarball(bytes: &[u8], dest: &Path) -> Result<()> {
         let mut entry = entry?;
         let raw_path = entry.path()?.into_owned();
 
-        // Elimina el componente raíz `python/` que incluye python-build-standalone.
         let stripped: std::path::PathBuf = raw_path.components().skip(1).collect();
         if stripped.as_os_str().is_empty() {
             continue;
@@ -173,7 +172,7 @@ fn extract_tarball(bytes: &[u8], dest: &Path) -> Result<()> {
                 std::fs::create_dir_all(parent)?;
             }
             entry.unpack(&outpath)
-                .with_context(|| format!("No se pudo extraer {:?}", outpath))?;
+                .with_context(|| format!("Could not extract {:?}", outpath))?;
         }
     }
 
@@ -193,7 +192,7 @@ fn find_python_exe(base: &Path) -> Result<std::path::PathBuf> {
         }
     }
 
-    bail!("No se encontró python.exe")
+    bail!("python.exe not found")
 }
 
 #[cfg(windows)]
@@ -201,10 +200,10 @@ fn ensurepip(python: &Path) -> Result<()> {
     let status = std::process::Command::new(python)
         .args(["-m", "ensurepip", "--default-pip"])
         .status()
-        .context("Error ejecutando ensurepip")?;
+        .context("Error running ensurepip")?;
 
     if !status.success() {
-        bail!("ensurepip falló");
+        bail!("ensurepip failed");
     }
 
     Ok(())
@@ -224,8 +223,12 @@ async fn resolve_version(version: &str) -> Result<String> {
             .filter(|v| v.pre.is_empty())
             .find(|v| format!("{}.{}", v.major, v.minor) == version)
             .map(|v| v.to_string())
-            .ok_or_else(|| anyhow::anyhow!("No se encontró ninguna versión estable para {}", version))?;
-        println!("Resolviendo {} → {}", version, latest);
+            .ok_or_else(|| anyhow::anyhow!("{}", t!(
+                "No stable version found for {}",
+                "No se encontró ninguna versión estable para {}",
+                version
+            )))?;
+        println!("{}", t!("Resolving {} → {}", "Resolviendo {} → {}", version, latest));
         return Ok(latest);
     }
 
@@ -237,8 +240,12 @@ async fn resolve_version(version: &str) -> Result<String> {
             .filter(|v| v.pre.is_empty())
             .find(|v| format!("{}.{}", v.major, v.minor) == version)
             .map(|v| v.to_string())
-            .ok_or_else(|| anyhow::anyhow!("No se encontró ninguna versión estable para {}", version))?;
-        println!("Resolviendo {} → {}", version, latest);
+            .ok_or_else(|| anyhow::anyhow!("{}", t!(
+                "No stable version found for {}",
+                "No se encontró ninguna versión estable para {}",
+                version
+            )))?;
+        println!("{}", t!("Resolving {} → {}", "Resolviendo {} → {}", version, latest));
         return Ok(latest);
     }
 }

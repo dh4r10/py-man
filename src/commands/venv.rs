@@ -1,11 +1,11 @@
 use anyhow::{bail, Context, Result};
 use std::path::PathBuf;
-use crate::{dirs, validate};
+use crate::{dirs, validate, t};
 
 pub fn run(dir: &str, extra_args: &[String], version_override: Option<&str>) -> Result<()> {
     let python = match version_override {
         Some(v) => {
-            println!("Creando venv con Python {} ...", v);
+            println!("{}", t!("Creating venv with Python {} ...", "Creando venv con Python {} ...", v));
             resolve_python_for_version(v)?
         }
         None => resolve_pinned_python()?,
@@ -18,16 +18,19 @@ pub fn run(dir: &str, extra_args: &[String], version_override: Option<&str>) -> 
     let status = std::process::Command::new(&python)
         .args(&cmd_args)
         .status()
-        .context("Error ejecutando python -m venv")?;
+        .context("Error running python -m venv")?;
 
     if !status.success() {
-        bail!("Error al crear el entorno virtual (código {:?}).", status.code());
+        bail!("{}", t!(
+            "Error creating the virtual environment (exit code {:?}).",
+            "Error al crear el entorno virtual (código {:?}).",
+            status.code()
+        ));
     }
 
     Ok(())
 }
 
-/// Resuelve el Python de una versión instalada específica.
 fn resolve_python_for_version(version: &str) -> Result<PathBuf> {
     validate::version(version)?;
 
@@ -35,8 +38,12 @@ fn resolve_python_for_version(version: &str) -> Result<PathBuf> {
 
     if !version_dir.exists() {
         bail!(
-            "La versión {} no está instalada. Usa `pvm install {}` primero.",
-            version, version
+            "{}",
+            t!(
+                "Version {} is not installed. Use `pvm install {}` first.",
+                "La versión {} no está instalada. Usa `pvm install {}` primero.",
+                version, version
+            )
         );
     }
 
@@ -46,22 +53,27 @@ fn resolve_python_for_version(version: &str) -> Result<PathBuf> {
     let python = version_dir.join("bin").join("python3");
 
     if !python.exists() {
-        bail!("No se encontró el ejecutable de Python en la versión {}.", version);
+        bail!("{}", t!(
+            "Python executable not found for version {}.",
+            "No se encontró el ejecutable de Python en la versión {}.",
+            version
+        ));
     }
 
     Ok(python)
 }
 
-/// Resuelve el Python real de la versión activa a través del alias current.
-/// El venv resultante queda anclado a la versión exacta (pyvenv.cfg con ruta real).
 fn resolve_pinned_python() -> Result<PathBuf> {
     let current = dirs::current_alias_dir()?;
     if !current.exists() {
-        bail!("No hay ninguna versión activa. Usa `pvm use <version>` primero.");
+        bail!("{}", t!(
+            "No active version. Use `pvm use <version>` first.",
+            "No hay ninguna versión activa. Usa `pvm use <version>` primero."
+        ));
     }
 
     let resolved = std::fs::canonicalize(&current)
-        .context("No se pudo resolver la ruta de la versión activa")?;
+        .context("Could not resolve the active version path")?;
 
     #[cfg(windows)]
     let version_dir = {
@@ -77,7 +89,10 @@ fn resolve_pinned_python() -> Result<PathBuf> {
     let python = version_dir.join("bin").join("python3");
 
     if !python.exists() {
-        bail!("No se encontró el ejecutable de Python en la versión activa.");
+        bail!("{}", t!(
+            "Python executable not found for the active version.",
+            "No se encontró el ejecutable de Python en la versión activa."
+        ));
     }
 
     Ok(python)

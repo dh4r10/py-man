@@ -1,5 +1,5 @@
 use anyhow::{bail, Context, Result};
-use crate::{dirs, validate};
+use crate::{dirs, validate, t};
 
 pub fn run(version: &str) -> Result<()> {
     validate::version(version)?;
@@ -8,9 +8,13 @@ pub fn run(version: &str) -> Result<()> {
 
     if !version_path.exists() {
         bail!(
-            "La versión {} no está instalada. Usa `pvm install {}` primero.",
-            version,
-            version
+            "{}",
+            t!(
+                "Version {} is not installed. Use `pvm install {}` first.",
+                "La versión {} no está instalada. Usa `pvm install {}` primero.",
+                version,
+                version
+            )
         );
     }
 
@@ -35,7 +39,7 @@ pub fn run(version: &str) -> Result<()> {
     create_junction_or_symlink(&version_path, &current)?;
     refresh_bin()?;
 
-    println!("Usando Python {}", version);
+    println!("{}", t!("Now using Python {}", "Usando Python {}", version));
 
     Ok(())
 }
@@ -47,7 +51,7 @@ fn create_junction_or_symlink(
     #[cfg(windows)]
     {
         junction::create(target, link)
-            .map_err(|e| anyhow::anyhow!("No se pudo crear junction: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Could not create junction: {}", e))?;
     }
 
     #[cfg(not(windows))]
@@ -58,37 +62,31 @@ fn create_junction_or_symlink(
     Ok(())
 }
 
-/// Instala shims en ~/.pvm/bin/ copiando el propio binario pvm.exe con distintos nombres.
-/// Cuando son invocados como python.exe / pip.exe, el binario detecta su nombre y actúa
-/// como shim: resuelve aliases/current y lanza el Python real de esa versión.
-/// Así sys.executable del proceso hijo apunta al directorio de versión exacto, lo que
-/// garantiza que pyvenv.cfg quede fijado a esa versión y los venvs sean aislados.
+/// Installs shims in ~/.pvm/bin/ by copying the pvm binary itself with different names.
+/// When invoked as python / pip, the binary detects its own name and acts as a shim:
+/// it resolves aliases/current and launches the real Python for that version.
+/// This way, sys.executable in the child process points to the exact version directory,
+/// ensuring pyvenv.cfg is pinned to that version and venvs are isolated.
 fn refresh_bin() -> Result<()> {
     let bin = dirs::bin_dir()?;
 
-    // Romper junction anterior si existe (arquitectura previa usaba junction en bin/).
-    // junction::delete usa FILE_FLAG_OPEN_REPARSE_POINT — funciona aunque el target no exista.
-    // Errores ignorados: puede que bin no sea un junction o no exista todavía.
+    // Remove old junction if present (previous architecture used a junction in bin/).
     #[cfg(windows)]
     let _ = junction::delete(&bin);
 
-    // remove_dir elimina el directorio vacío resultante o el directorio vacío de ensure_dirs.
-    // "Not empty" (tiene shims anteriores) y NotFound son ambos aceptables — se ignoran.
     match std::fs::remove_dir(&bin) {
         Ok(()) => {}
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {}
         Err(ref e) if e.raw_os_error() == Some(145) => {} // Windows: ERROR_DIR_NOT_EMPTY
         Err(ref e) if e.raw_os_error() == Some(39) => {}  // Linux: ENOTEMPTY
         Err(ref e) if e.raw_os_error() == Some(66) => {}  // macOS: ENOTEMPTY
-        Err(e) => bail!("No se pudo limpiar bin/: {}", e),
+        Err(e) => bail!("{}", t!("Could not clean bin/: {}", "No se pudo limpiar bin/: {}", e)),
     }
 
     std::fs::create_dir_all(&bin)?;
 
-    // Copiar pvm con los nombres de shim. El binario detecta su propio nombre
-    // en tiempo de ejecución y actúa como shim en lugar de como CLI pvm.
     let pvm_exe = std::env::current_exe()
-        .context("No se pudo determinar la ruta del ejecutable pvm")?;
+        .context("Could not determine the pvm executable path")?;
 
     #[cfg(windows)]
     let shim_names: &[&str] = &["python.exe", "pythonw.exe", "pip.exe", "pip3.exe"];
@@ -99,7 +97,7 @@ fn refresh_bin() -> Result<()> {
         let dst = bin.join(name);
         let _ = std::fs::remove_file(&dst);
         std::fs::copy(&pvm_exe, &dst)
-            .with_context(|| format!("No se pudo crear shim {}", name))?;
+            .with_context(|| t!("Could not create shim {}", "No se pudo crear shim {}", name))?;
     }
 
     Ok(())

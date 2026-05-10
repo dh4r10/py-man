@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use crate::{dirs, validate};
+use crate::{dirs, validate, t};
 
 pub fn run(version: &str) -> Result<()> {
     validate::version(version)?;
@@ -7,8 +7,12 @@ pub fn run(version: &str) -> Result<()> {
 
     if !version_path.exists() {
         bail!(
-            "La versión {} no está instalada. Usa `pvm install {}` primero.",
-            version, version
+            "{}",
+            t!(
+                "Version {} is not installed. Use `pvm install {}` first.",
+                "La versión {} no está instalada. Usa `pvm install {}` primero.",
+                version, version
+            )
         );
     }
 
@@ -32,17 +36,20 @@ pub fn run(version: &str) -> Result<()> {
     #[cfg(windows)]
     {
         junction::create(&version_path, &default_path)
-            .map_err(|e| anyhow::anyhow!("No se pudo crear junction: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Could not create junction: {}", e))?;
     }
     #[cfg(not(windows))]
     {
         std::os::unix::fs::symlink(&version_path, &default_path)?;
     }
 
-    // Guardar la versión default en un archivo de texto para referencia
     let default_file = dirs::pvm_home()?.join("default");
     std::fs::write(&default_file, version)?;
 
-    println!("Versión por defecto establecida: Python {}", version);
+    println!("{}", t!(
+        "Default version set: Python {}",
+        "Versión por defecto establecida: Python {}",
+        version
+    ));
     Ok(())
 }

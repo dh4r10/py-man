@@ -41,6 +41,10 @@ pub fn bin_dir() -> Result<PathBuf> {
     Ok(pvm_home()?.join("bin"))
 }
 
+pub fn language_file() -> Result<PathBuf> {
+    Ok(pvm_home()?.join("language"))
+}
+
 pub fn ensure_dirs() -> Result<()> {
     std::fs::create_dir_all(versions_dir()?)?;
     std::fs::create_dir_all(aliases_dir()?)?;

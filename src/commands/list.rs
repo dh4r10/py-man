@@ -1,12 +1,15 @@
 use anyhow::Result;
-use crate::dirs;
+use crate::{dirs, t};
 
 pub fn run() -> Result<()> {
     let versions_dir = dirs::versions_dir()?;
 
     if !versions_dir.exists() {
-        println!("No hay versiones instaladas.");
-        println!("  Usa `pvm install <version>` para instalar una.");
+        println!("{}", t!("No versions installed.", "No hay versiones instaladas."));
+        println!("  {}", t!(
+            "Use `pvm install <version>` to install one.",
+            "Usa `pvm install <version>` para instalar una."
+        ));
         return Ok(());
     }
 
@@ -21,15 +24,18 @@ pub fn run() -> Result<()> {
     versions.sort();
 
     if versions.is_empty() {
-        println!("No hay versiones instaladas.");
-        println!("  Usa `pvm install <version>` para instalar una.");
+        println!("{}", t!("No versions installed.", "No hay versiones instaladas."));
+        println!("  {}", t!(
+            "Use `pvm install <version>` to install one.",
+            "Usa `pvm install <version>` para instalar una."
+        ));
         return Ok(());
     }
 
-    println!("Versiones instaladas:");
+    println!("{}", t!("Installed versions:", "Versiones instaladas:"));
     for v in &versions {
         if Some(v.as_str()) == current.as_deref() {
-            println!("  * {} (activa)", v);
+            println!("  * {} {}", v, t!("(active)", "(activa)"));
         } else {
             println!("    {}", v);
         }
@@ -45,7 +51,6 @@ fn current_version() -> Result<Option<String>> {
         return Ok(None);
     }
 
-    // Leer el destino del symlink/junction y extraer el nombre de la versión
     let target = std::fs::read_link(&current_path).unwrap_or(current_path);
     let version = target
         .file_name()

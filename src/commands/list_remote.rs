@@ -3,6 +3,7 @@ use colored::Colorize;
 use semver::Version;
 use std::collections::BTreeMap;
 use std::io::{IsTerminal, Write};
+use crate::t;
 
 #[cfg(windows)]
 use crate::releases::fetch_remote_versions;
@@ -23,8 +24,11 @@ pub async fn run(filter: Option<String>) -> Result<()> {
 async fn run_windows(filter: Option<String>) -> Result<()> {
     println!(
         "{}",
-        "Obteniendo versiones disponibles de python.org..."
-            .truecolor(DIM.0, DIM.1, DIM.2)
+        t!(
+            "Fetching available versions from python.org...",
+            "Obteniendo versiones disponibles de python.org..."
+        )
+        .truecolor(DIM.0, DIM.1, DIM.2)
     );
     let versions = fetch_remote_versions().await?;
     let installed = installed_versions();
@@ -38,8 +42,11 @@ async fn run_linux(filter: Option<String>) -> Result<()> {
     use crate::releases::fetch_standalone_versions;
     println!(
         "{}",
-        "Obteniendo versiones disponibles para Linux..."
-            .truecolor(DIM.0, DIM.1, DIM.2)
+        t!(
+            "Fetching available versions for Linux...",
+            "Obteniendo versiones disponibles para Linux..."
+        )
+        .truecolor(DIM.0, DIM.1, DIM.2)
     );
     let versions = fetch_standalone_versions().await?;
     let installed = installed_versions();
@@ -82,7 +89,11 @@ fn print_version_line(v: &Version, installed: &[String], active: Option<&str>, i
     };
 
     if is_installed {
-        let label = if is_active { " (activa)" } else { " (instalada)" };
+        let label = if is_active {
+            format!(" {}", t!("(active)", "(activa)"))
+        } else {
+            format!(" {}", t!("(installed)", "(instalada)"))
+        };
         println!(
             "    {} {}{}{}",
             "*".green().bold(),
@@ -102,7 +113,7 @@ fn wait_space() -> bool {
 
     let _ = enable_raw_mode();
 
-    // Vaciar eventos pendientes en el buffer (ej: el Enter del comando anterior)
+    // Flush any buffered key events from the previous command (e.g. the Enter press)
     while poll(Duration::ZERO).unwrap_or(false) {
         let _ = read();
     }
@@ -141,17 +152,23 @@ fn print_versions(
         .collect();
 
     if filtered.is_empty() {
-        println!("No se encontraron versiones para el filtro dado.");
+        println!("{}", t!(
+            "No versions found for the given filter.",
+            "No se encontraron versiones para el filtro dado."
+        ));
         return;
     }
 
     println!(
         "\n  {}  {}",
-        format!("{} versiones disponibles.", filtered.len())
+        t!("{} versions available.", "{} versiones disponibles.", filtered.len())
             .truecolor(CMD.0, CMD.1, CMD.2)
             .bold(),
-        "Usa --filter <prefijo> para filtrar  (ej: --filter 3.12)"
-            .truecolor(DIM.0, DIM.1, DIM.2)
+        t!(
+            "Use --filter <prefix> to filter  (e.g. --filter 3.12)",
+            "Usa --filter <prefijo> para filtrar  (ej: --filter 3.12)"
+        )
+        .truecolor(DIM.0, DIM.1, DIM.2)
     );
 
     let mut groups: BTreeMap<(u64, u64), Vec<&Version>> = BTreeMap::new();
@@ -166,8 +183,11 @@ fn print_versions(
         if interactive && i >= 3 {
             print!(
                 "  {}\n",
-                "Presiona [SPACE] para ver más versiones  [otra tecla] salir"
-                    .truecolor(DIM.0, DIM.1, DIM.2)
+                t!(
+                    "Press [SPACE] for more versions  [any key] to exit",
+                    "Presiona [SPACE] para ver más versiones  [otra tecla] salir"
+                )
+                .truecolor(DIM.0, DIM.1, DIM.2)
             );
             let _ = std::io::stdout().flush();
 

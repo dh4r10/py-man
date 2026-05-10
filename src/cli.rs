@@ -28,59 +28,87 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Descarga e instala una versión de Python desde NuGet / python-build-standalone
+    /// Download and install a Python version from NuGet / python-build-standalone
     Install {
-        /// Versión a instalar  (ej: 3.12.4)
+        /// Version to install (e.g. 3.12.4)
         version: String,
     },
 
-    /// Cambia la versión activa e instala los shims en ~/.pvm/bin
+    /// Switch the active version and install shims in ~/.pvm/bin
     Use {
-        /// Versión a activar  (ej: 3.12.4)
+        /// Version to activate (e.g. 3.12.4)
         version: String,
     },
 
-    /// Lista las versiones instaladas localmente  (* marca la activa)
+    /// List locally installed versions (* marks the active one)
     List,
 
-    /// Lista las versiones disponibles en python.org
+    /// List versions available on python.org
     ListRemote {
-        /// Filtrar por prefijo  (ej: 3.12)
+        /// Filter by prefix (e.g. 3.12)
         #[arg(short, long, value_name = "PREFIX")]
         filter: Option<String>,
     },
 
-    /// Elimina una versión instalada (no permite eliminar la versión activa)
+    /// Remove an installed version (cannot remove the active version)
     Uninstall {
-        /// Versión a eliminar  (ej: 3.12.4)
+        /// Version to remove (e.g. 3.12.4)
         version: String,
     },
 
-    /// Establece la versión global por defecto
+    /// Set the global default version
     Default {
-        /// Versión a marcar como default  (ej: 3.12.4)
+        /// Version to set as default (e.g. 3.12.4)
         version: String,
     },
 
-    /// Imprime el comando para añadir ~/.pvm/bin al PATH del shell actual
+    /// Print the command to add ~/.pvm/bin to the current shell's PATH
     Env {
-        /// Shell de destino (detectado automáticamente si se omite)
+        /// Target shell (auto-detected if omitted)
         #[arg(long, value_enum, value_name = "SHELL")]
         shell: Option<Shell>,
     },
 
-    /// Crea un entorno virtual anclado a una versión exacta de Python
+    /// Create a virtual environment pinned to an exact Python version
     ///
-    /// Usa la versión activa por defecto. Para especificar otra:
+    /// Uses the active version by default. To use a specific version:
     ///   pvm -3.12.4 venv .venv
     Venv {
-        /// Directorio donde crear el entorno virtual
+        /// Directory where the virtual environment will be created
         dir: String,
-        /// Opciones adicionales para `python -m venv`  (ej: --system-site-packages)
+        /// Extra options passed to `python -m venv` (e.g. --system-site-packages)
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         args: Vec<String>,
     },
 
-    /// Desinstala PVM del sistema (elimina ~/.pvm/, PATH y perfil de PowerShell)
+    /// Uninstall PVM from the system (removes ~/.pvm/, PATH entries and shell profile)
     UninstallSelf,
+
+    /// Manage the display language
+    ///
+    /// Lists available languages when called without arguments.
+    /// Use 'change' (or '-c') to switch language:
+    ///   pvm lang change english
+    ///   pvm lang -c español
+    #[command(name = "lang")]
+    Language {
+        #[command(subcommand)]
+        action: Option<LanguageAction>,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum LanguageAction {
+    /// Change the display language  (alias: -c)
+    ///
+    /// Accepted values: english, español, en, es
+    ///
+    /// Examples:
+    ///   pvm lang change english
+    ///   pvm lang -c español
+    #[command(alias = "c")]
+    Change {
+        /// Language name: english, español (or en, es)
+        language: String,
+    },
 }

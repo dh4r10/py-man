@@ -1,12 +1,12 @@
 use anyhow::{bail, Context, Result};
-use crate::{dirs, validate};
+use crate::{dirs, validate, t};
 
 pub fn run(version: &str) -> Result<()> {
     validate::version(version)?;
     let version_path = dirs::version_dir(version)?;
 
     if !version_path.exists() {
-        bail!("La versión {} no está instalada.", version);
+        bail!("{}", t!("Version {} is not installed.", "La versión {} no está instalada.", version));
     }
 
     let current = dirs::current_alias_dir()?;
@@ -14,14 +14,17 @@ pub fn run(version: &str) -> Result<()> {
         let target = std::fs::read_link(&current).unwrap_or_else(|_| current.clone());
         if target == version_path {
             bail!(
-                "No se puede desinstalar la versión activa ({}). \
-                 Cambia primero con `pvm use <otra_version>`.",
-                version
+                "{}",
+                t!(
+                    "Cannot uninstall the active version ({}). Switch first with `pvm use <other_version>`.",
+                    "No se puede desinstalar la versión activa ({}). Cambia primero con `pvm use <otra_version>`.",
+                    version
+                )
             );
         }
     }
 
-    print!("Eliminando Python {} ... ", version);
+    print!("{}", t!("Removing Python {} ... ", "Eliminando Python {} ... ", version));
     use std::io::Write;
     let _ = std::io::stdout().flush();
 
@@ -35,9 +38,13 @@ pub fn run(version: &str) -> Result<()> {
     strip_readonly(&version_path);
 
     std::fs::remove_dir_all(&version_path)
-        .with_context(|| format!("No se pudo eliminar el directorio de Python {}", version))?;
+        .with_context(|| t!(
+            "Could not remove Python {} directory",
+            "No se pudo eliminar el directorio de Python {}",
+            version
+        ))?;
 
-    println!("hecho.");
+    println!("{}", t!("done.", "hecho."));
     Ok(())
 }
 
@@ -47,14 +54,12 @@ pub fn run(version: &str) -> Result<()> {
 /// points to our installation.
 #[cfg(windows)]
 fn windows_deregister(version: &str, version_path: &std::path::Path) {
-    // Remove the MSI product registration (prevents error 1638 on reinstall).
     if let Some(guid) = find_msi_guid_for_path(version_path) {
         let _ = std::process::Command::new("msiexec")
             .args(["/x", &guid, "/quiet", "/norestart"])
             .output();
     }
 
-    // Belt-and-suspenders: also clean Python's own registry key.
     let parts: Vec<&str> = version.splitn(3, '.').collect();
     if parts.len() < 2 { return; }
     let major_minor = format!("{}.{}", parts[0], parts[1]);
