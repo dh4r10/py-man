@@ -10,13 +10,13 @@
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-CE422B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![License MIT](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)](LICENSE)
 
-🇺🇸 [English](#english) · 🇪🇸 [Español](#español)
+🇺🇸 [English](#-english) · 🇪🇸 [Español](#-español)
+
+[Install](#installation) · [Quick start](#quick-start) · [Commands](#commands)
 
 </div>
 
 ---
-
-<a name="english"></a>
 
 ## 🇺🇸 English
 
@@ -195,8 +195,6 @@ Inspired by [fnm](https://github.com/Schniz/fnm) (Fast Node Manager) — the sam
 [🔝 Back to top](#)
 
 ---
-
-<a name="español"></a>
 
 ## 🇪🇸 Español
 
