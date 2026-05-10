@@ -95,6 +95,8 @@ python --version
 | `pvm default <version>`          | Set the global default version                                       |
 | `pvm env`                        | Print the command to add `~/.pvm/bin` to your shell PATH             |
 | `pvm venv <dir>`                 | Create a virtual environment pinned to the active version            |
+| `pvm lang list`                  | Show available languages and the active one                          |
+| `pvm lang change <lang>`         | Switch the interface language (`en` / `es`)                          |
 | `pvm uninstall-self`             | Uninstall PVM from the system                                        |
 
 ### Virtual Environments
@@ -119,6 +121,17 @@ python -V
 ```bash
 source .venv/bin/activate
 python --version
+```
+
+### Language
+
+PVM supports English and Spanish. The preference is saved to `~/.pvm/lang` and loaded automatically on every run.
+
+```bash
+pvm lang list              # show available languages
+pvm lang change es         # switch to Spanish
+pvm lang change en         # switch back to English
+pvm lang -c es             # short alias
 ```
 
 ### Supported Shells
@@ -273,6 +286,8 @@ python --version
 | `pvm default <version>`          | Establece la versión global por defecto                              |
 | `pvm env`                        | Imprime el comando para añadir `~/.pvm/bin` al PATH del shell        |
 | `pvm venv <dir>`                 | Crea un entorno virtual anclado a la versión activa                  |
+| `pvm lang list`                  | Muestra los idiomas disponibles y el activo                          |
+| `pvm lang change <lang>`         | Cambia el idioma de la interfaz (`en` / `es`)                        |
 | `pvm uninstall-self`             | Desinstala PVM del sistema                                           |
 
 ### Entornos virtuales
@@ -297,6 +312,17 @@ python -V
 ```bash
 source .venv/bin/activate
 python --version
+```
+
+### Idioma
+
+PVM soporta inglés y español. La preferencia se guarda en `~/.pvm/lang` y se carga automáticamente en cada ejecución.
+
+```bash
+pvm lang list              # ver idiomas disponibles
+pvm lang change es         # cambiar a español
+pvm lang change en         # volver a inglés
+pvm lang -c es             # alias corto
 ```
 
 ### Shells soportados
