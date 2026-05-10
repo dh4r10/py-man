@@ -59,7 +59,7 @@ jobs:
         run: iscc /DAppVersion=${{ steps.version.outputs.value }} installer\pvm.iss
       - name: Sync npm/package.json version
         shell: pwsh
-        run: npm --prefix npm version ${{ steps.version.outputs.value }} --no-git-tag-version
+        run: npm --prefix npm version ${{ steps.version.outputs.value }} --no-git-tag-version --allow-same-version
       - name: Copy artifacts
         shell: pwsh
         run: |
@@ -91,3 +91,20 @@ jobs:
             pvm-linux-aarch64-v*
             pvm-windows-x86_64-v*.exe
             pvm.exe
+
+  npm-publish:
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+          path: npm/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm publish
+        working-directory: npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
