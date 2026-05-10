@@ -67,16 +67,16 @@ The script detects your architecture (`x86_64` or `aarch64`), downloads the righ
 **Windows**
 
 ```powershell
-pvm install 3.12.13
-pvm use 3.12.13
+pvm install 3.13          # installs latest 3.13 patch automatically
+pvm use 3.13.3
 python -V
-# Python 3.12.13
+# Python 3.13.3
 ```
 
 **Linux**
 
 ```bash
-pvm install 3.13.3
+pvm install 3.13          # installs latest 3.13 patch automatically
 pvm use 3.13.3
 python --version
 # Python 3.13.3
@@ -86,10 +86,10 @@ python --version
 
 | Command                          | Description                                                          |
 | -------------------------------- | -------------------------------------------------------------------- |
-| `pvm install <version>`          | Download and install a Python version                                |
+| `pvm install <version>`          | Download and install a Python version (`3.13` or `3.13.3`)          |
 | `pvm use <version>`              | Switch the active version                                            |
 | `pvm list`                       | List installed versions (`*` marks the active one)                   |
-| `pvm list-remote`                | List installable versions (python-build-standalone on Linux, python.org on Windows) |
+| `pvm list-remote`                | Browse available versions grouped by minor, with interactive pagination |
 | `pvm list-remote --filter 3.12`  | Filter by version prefix                                             |
 | `pvm uninstall <version>`        | Remove an installed version                                          |
 | `pvm default <version>`          | Set the global default version                                       |
@@ -245,16 +245,16 @@ El script detecta tu arquitectura (`x86_64` o `aarch64`), descarga el binario co
 **Windows**
 
 ```powershell
-pvm install 3.12.13
-pvm use 3.12.13
+pvm install 3.13          # instala la última patch 3.13 automáticamente
+pvm use 3.13.3
 python -V
-# Python 3.12.13
+# Python 3.13.3
 ```
 
 **Linux**
 
 ```bash
-pvm install 3.13.3
+pvm install 3.13          # instala la última patch 3.13 automáticamente
 pvm use 3.13.3
 python --version
 # Python 3.13.3
@@ -264,10 +264,10 @@ python --version
 
 | Comando                          | Descripción                                                          |
 | -------------------------------- | -------------------------------------------------------------------- |
-| `pvm install <version>`          | Descarga e instala una versión de Python                             |
+| `pvm install <version>`          | Descarga e instala una versión de Python (`3.13` o `3.13.3`)         |
 | `pvm use <version>`              | Cambia la versión activa                                             |
 | `pvm list`                       | Lista las versiones instaladas (`*` marca la activa)                 |
-| `pvm list-remote`                | Lista versiones instalables (python-build-standalone en Linux, python.org en Windows) |
+| `pvm list-remote`                | Lista versiones disponibles agrupadas por minor, con paginación interactiva |
 | `pvm list-remote --filter 3.12`  | Filtra por prefijo de versión                                        |
 | `pvm uninstall <version>`        | Elimina una versión instalada                                        |
 | `pvm default <version>`          | Establece la versión global por defecto                              |
