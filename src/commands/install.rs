@@ -6,6 +6,9 @@ use std::path::Path;
 use crate::{dirs, releases, validate};
 
 pub async fn run(version: &str) -> Result<()> {
+    let version = resolve_version(version).await?;
+    let version = version.as_str();
+
     validate::version(version)?;
 
     let dest = dirs::version_dir(version)?;
@@ -205,4 +208,37 @@ fn ensurepip(python: &Path) -> Result<()> {
     }
 
     Ok(())
+}
+
+async fn resolve_version(version: &str) -> Result<String> {
+    let minor_re = regex::Regex::new(r"^\d{1,3}\.\d{1,3}$").unwrap();
+    if !minor_re.is_match(version) {
+        return Ok(version.to_string());
+    }
+
+    #[cfg(windows)]
+    {
+        let versions = crate::releases::fetch_remote_versions().await?;
+        let latest = versions
+            .iter()
+            .filter(|v| v.pre.is_empty())
+            .find(|v| format!("{}.{}", v.major, v.minor) == version)
+            .map(|v| v.to_string())
+            .ok_or_else(|| anyhow::anyhow!("No se encontró ninguna versión estable para {}", version))?;
+        println!("Resolviendo {} → {}", version, latest);
+        return Ok(latest);
+    }
+
+    #[cfg(not(windows))]
+    {
+        let versions = crate::releases::fetch_standalone_versions().await?;
+        let latest = versions
+            .iter()
+            .filter(|v| v.pre.is_empty())
+            .find(|v| format!("{}.{}", v.major, v.minor) == version)
+            .map(|v| v.to_string())
+            .ok_or_else(|| anyhow::anyhow!("No se encontró ninguna versión estable para {}", version))?;
+        println!("Resolviendo {} → {}", version, latest);
+        return Ok(latest);
+    }
 }

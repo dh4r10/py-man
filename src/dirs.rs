@@ -2,8 +2,14 @@ use anyhow::{Context, Result};
 use std::path::PathBuf;
 
 pub fn pvm_home() -> Result<PathBuf> {
+    if let Ok(custom) = std::env::var("PVM_HOME") {
+        return Ok(PathBuf::from(custom));
+    }
     let home = dirs::home_dir().context("No se pudo encontrar el directorio home")?;
-    Ok(home.join(".pvm"))
+    #[cfg(debug_assertions)]
+    return Ok(home.join(".pvm_dev"));
+    #[cfg(not(debug_assertions))]
+    return Ok(home.join(".pvm"));
 }
 
 pub fn versions_dir() -> Result<PathBuf> {

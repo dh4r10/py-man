@@ -1,18 +1,26 @@
 use anyhow::Result;
-use regex::Regex;
 use semver::Version;
 
-const PYTHON_FTP: &str = "https://www.python.org/ftp/python/";
 const NUGET_BASE: &str = "https://www.nuget.org/api/v2/package/python/";
 
 pub async fn fetch_remote_versions() -> Result<Vec<Version>> {
-    let body = reqwest::get(PYTHON_FTP).await?.text().await?;
+    let client = reqwest::Client::builder()
+        .user_agent("pvm/1.0")
+        .build()?;
 
-    let re = Regex::new(r#"href="(\d+\.\d+\.\d+)/""#)?;
+    let resp: serde_json::Value = client
+        .get("https://api.nuget.org/v3-flatcontainer/python/index.json")
+        .send()
+        .await?
+        .json()
+        .await?;
 
-    let mut versions: Vec<Version> = re
-        .captures_iter(&body)
-        .filter_map(|cap| Version::parse(&cap[1]).ok())
+    let mut versions: Vec<Version> = resp["versions"]
+        .as_array()
+        .unwrap_or(&vec![])
+        .iter()
+        .filter_map(|v| v.as_str())
+        .filter_map(|v| Version::parse(v).ok())
         .collect();
 
     versions.sort_by(|a, b| b.cmp(a));
