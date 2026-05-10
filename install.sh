@@ -4,20 +4,27 @@ set -euo pipefail
 REPO="dh4r10/py-man"
 INSTALL_DIR="$HOME/.local/bin"
 
+# Get latest release version
+VERSION=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
+if [ -z "$VERSION" ]; then
+  echo "Error: no se pudo obtener la última versión de GitHub" >&2
+  exit 1
+fi
+
 # Detect architecture
 ARCH=$(uname -m)
 case "$ARCH" in
-  x86_64)          ASSET="pvm-linux-x86_64" ;;
-  aarch64 | arm64) ASSET="pvm-linux-aarch64" ;;
+  x86_64)          ASSET="pvm-linux-x86_64-v${VERSION}" ;;
+  aarch64 | arm64) ASSET="pvm-linux-aarch64-v${VERSION}" ;;
   *)
     echo "Error: arquitectura no soportada: $ARCH" >&2
     exit 1
     ;;
 esac
 
-URL="https://github.com/$REPO/releases/latest/download/$ASSET"
+URL="https://github.com/$REPO/releases/download/v${VERSION}/$ASSET"
 
-echo "Instalando pvm para Linux ($ARCH)..."
+echo "Instalando pvm v${VERSION} para Linux ($ARCH)..."
 
 # Download binary
 mkdir -p "$INSTALL_DIR"
